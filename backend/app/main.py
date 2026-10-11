@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI, HTTPException, Query, Response, status
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
-
+import backend.app.schemas as schemas
 from .database import engine
 from .schemas import EnrollmentCreate
 
@@ -204,3 +204,15 @@ def delete_enrollment(student_id: str, class_section_id: str) -> Response:
                 detail="Khong tim thay dang ky can huy",
             )
         return Response(status_code=status.HTTP_204_NO_CONTENT)
+# 9. Danh sách giảng viên (Bài tập tự thực hành 1)
+@app.get("/lecturers", response_model=list[schemas.LecturerResponse])
+def get_lecturers():
+    with engine.connect() as conn:
+        query = text("""
+            SELECT id, name
+            FROM lecturers
+            ORDER BY id;
+        """)
+        result = conn.execute(query)
+        rows = result.mappings().all()
+        return [dict(row) for row in rows]
